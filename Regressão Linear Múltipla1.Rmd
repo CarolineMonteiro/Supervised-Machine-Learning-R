@@ -1,0 +1,59 @@
+---
+title: "Regressão Linear Múltipla 1"
+author: "Caroline Hernandes Monteiro"
+date: "17/09/2021"
+output: pdf_document
+---
+
+```{r}
+pacotes <- c("plotly","tidyverse","ggrepel","fastDummies","knitr","kableExtra",
+             "splines","reshape2","PerformanceAnalytics","metan","correlation",
+             "see","ggraph","nortest","rgl","car","olsrr","jtools","ggstance",
+             "magick","cowplot","beepr","Rcpp")
+
+if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
+  instalador <- pacotes[!pacotes %in% installed.packages()]
+  for(i in 1:length(instalador)) {
+    install.packages(instalador, dependencies = T)
+    break()}
+  sapply(pacotes, require, character = T) 
+} else {
+  sapply(pacotes, require, character = T) 
+}
+```
+
+
+```{r}
+load(file = "paises.RData")
+
+paises %>%
+  kable() %>%
+  kable_styling(bootstrap_options = "striped", 
+                full_width = F, 
+                font_size = 20)
+
+summary(paises)
+```
+
+
+Usando a função correlation() do pacote correlation e a função chart.correlation() do pacote performanceAnalytics para visualizar as correlações:
+
+```{r}
+paises %>%
+  correlation(method = "pearson") %>%
+  plot()
+
+chart.Correlation((paises[2:4]), histogram = TRUE)
+```
+
+
+Estimando o modelo:
+
+```{r}
+modelo_paises <- lm(formula = cpi ~ . - pais,
+                    data = paises)
+summary(modelo_paises)
+confint(modelo_paises, level = 0.95)
+
+paises$cpifit <- modelo_paises$fitted.values
+```
