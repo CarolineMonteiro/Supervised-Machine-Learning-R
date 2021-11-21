@@ -1,0 +1,60 @@
+---
+title: "Regressão Linear Múltipla 2"
+author: "Caroline Hernandes Monteiro"
+date: "21/09/2021"
+output: pdf_document
+---
+
+```{r}
+pacotes <- c("plotly","tidyverse","ggrepel","fastDummies","knitr","kableExtra",
+             "splines","reshape2","PerformanceAnalytics","metan","correlation",
+             "see","ggraph","nortest","rgl","car","olsrr","jtools","ggstance",
+             "magick","cowplot","beepr","Rcpp")
+if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
+  instalador <- pacotes[!pacotes %in% installed.packages()]
+  for(i in 1:length(instalador)) {
+    install.packages(instalador, dependencies = T)
+    break()}
+  sapply(pacotes, require, character = T) 
+} else {
+  sapply(pacotes, require, character = T) 
+}
+```
+
+
+```{r}
+load(file = "corrupcao.RData")
+
+summary(corrupcao)
+
+table(corrupcao$regiao) # tabela de frequências da variável região
+```
+
+Como temos uma variável categórica, devemos dummizar esta variável.
+
+A função dummy_columns(), automaticamente, fará:
+- estabelecimento de dummies que representarão cada uma das regiões da base
+- removerá a variável dummizada original (no caso região)
+- estabelecerá como categoria de referência a dummy mais frequente.
+
+```{r}
+corrupcao_dummies <- dummy_columns(.data = corrupcao,
+                                   select_columns = "regiao",
+                                   remove_selected_columns = T,
+                                   remove_most_frequent_dummy = T)
+
+corrupcao_dummies %>%
+  kable() %>%
+  kable_styling(bootstrap_options = "striped", 
+                full_width = F, 
+                font_size = 16)
+```
+
+
+Estimação do modelo de regressão:
+
+```{r}
+modelo_corrupcao_dummies <- lm(cpi ~ . - pais, corrupcao_dummies)
+summary(modelo_corrupcao_dummies)
+```
+
